@@ -8,20 +8,24 @@
     top: 5%;
     border-collapse: collapse;
 }
-.black-field{
-    background-color: black;
+.table-container tr ,td{
     height: 12%;
     width: 12%;
     border: 3px solid black;
 }
-.white-field{
-    background-color: white;
-    height: 12%;
-    width: 12%;
-    border: 3px solid black;
-    margin: 0%;
+.table-container tr:nth-child(2n+2) td:nth-child(2n+1){
+    background-color: wheat;
 }
-.num-table{
+.table-container tr:nth-child(2n+1) td:nth-child(2n+2){ 
+    background-color: wheat;
+}
+.table-container tr:nth-child(2n+2) td:nth-child(2n+2){ 
+    background-color: brown;
+}
+.table-container tr:nth-child(2n+1) td:nth-child(2n+1){ 
+    background-color: brown;
+}
+    .num-table{
     font-weight: bold;
     text-align: center;
 }
