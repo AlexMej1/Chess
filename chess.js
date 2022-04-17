@@ -2,6 +2,9 @@
 window.onload = () => {
 let typeW='White';
 let typeD='Dark';
+let lastCell;
+let lastCellI;
+let lastCellJ;
 var table = document.createElement('table');
 table.classList.add('table-container');
 const body = document.querySelector('body');
@@ -11,6 +14,11 @@ for(let i=0; i<8; i++){
     for(let j=0; j<8; j++){
         cell = row.insertCell();
         cell.id='cell '+ i.toString() + '.' + j.toString();
+        lastCell=cell;
+        lastCellI=i;
+        lastCellJ=j;
+        lastCellColor=cell.style.backgroundColor;
+        clickedOne(cell,i,j);
         BoardColor(i, j, cell);              
         if(i===0){
             if(j===0 || j===7){
@@ -63,18 +71,28 @@ for(let i=0; i<8; i++){
         img.classList.add('heroImg');
     }
     function HClick(cell, i, j){
-        cell.style.backgroundColor="white";
+        cell.classList.add('changedCell');
+        if(lastCell!==cell){
+            lastCell.classList.remove('changedCell');
+        }
+        lastCell=cell;
         console.log('click '+cell.id.toString());
+        
     }
     function BoardColor(i,j,cell){
         if((i + j) % 2===0){
-            cell.style.backgroundColor = "brown";
+            // cell.style.backgroundColor = "brown";
+            cell.classList.add('darkTyped');
         }
         else{
-            cell.style.backgroundColor = "wheat";
+            // cell.style.backgroundColor = "wheat";
+            cell.classList.add('whiteTyped');
         }
-        cell.addEventListener('click', () => {HClick(cell, i, j);});
+        
         console.log('painted');
+    }
+    function clickedOne(cell,i,j){
+        cell.addEventListener('click', () => {HClick(cell, i, j);});
     }
 
 
