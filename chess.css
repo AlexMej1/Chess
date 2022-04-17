@@ -14,16 +14,10 @@
     width: 12%;
     border: 3px solid black;
 }
-.table-container tr:nth-child(even) td:nth-child(odd){
+.whiteTyped{
     background-color: wheat;
 }
-.table-container tr:nth-child(odd) td:nth-child(even){ 
-    background-color: wheat;
-}
-.table-container tr:nth-child(even) td:nth-child(even){ 
-    background-color: brown;
-}
-.table-container tr:nth-child(odd) td:nth-child(odd){ 
+.darkTyped{
     background-color: brown;
 }
     .num-table{
@@ -34,4 +28,10 @@
     height: 70px;
     width: 70px;
     position: absolute;
+}
+.heroImg{
+    align-self: center;
+    width: 70px;
+    height: 70px;
+
 }
