@@ -1,206 +1,230 @@
 
-window.onload = () => {
-let typeW='White';
-let typeD='Dark';
-let lastCell;
-let lastCellI;
-let lastCellJ;
-var table = document.createElement('table');
-table.classList.add('table-container');
-const body = document.querySelector('body');
-body.appendChild(table);
-for(let i=0; i<8; i++){
-    const row = table.insertRow(i);
-    for(let j=0; j<8; j++){
-        cell = row.insertCell();
-        cell.id='cell '+ i.toString() + '.' + j.toString();
-        lastCell=cell;
-        lastCellI=i;
-        lastCellJ=j;
-        lastCellColor=cell.style.backgroundColor;
-        clickedOne(cell,i,j);
-        BoardColor(i, j, cell);              
-        if(i===0){
-            if(j===0 || j===7){
-                AddImage(typeW, 'Palhan', cell);
-            }
-            else if(j===1 || j===6){
-                AddImage(typeW, 'Horse', cell);
-            }
-            else if(j===2 || j===5){
-                AddImage(typeW, 'Elephant', cell);
-            }
-            else if(j===3){
-                AddImage(typeW, 'King', cell);
-            }
-            else{
-                AddImage(typeW, 'Quin', cell);
-            }
+window.onload = () => 
+{
+////////////////////////////////////
+{//Creation of the table and the cells with coloring
+    var table = document.createElement('table');
+    table.classList.add('table-container'); 
+    const body = document.querySelector('body');         
+    body.appendChild(table);  
+    for(let i=0; i<8; i++){
+        const row = table.insertRow(i);
+        for(let j=0; j<8; j++){
+            cell = row.insertCell();
+            cell.id= i.toString() + '.' + j.toString();
+            cell.addEventListener('click', HClick);             
         }
-        if(i===1){
-            AddImage(typeW, 'Simple', cell);
+    }  
+    BoardColor();
+} 
+////////////////////////////////////
+    let typeW='White';
+    let typeD='Dark';
+    let pieces=[];
+////////////////////////////////////
+    class piece{//Class of the chess pieces
+        constructor(row, col, type, pieceT,img){
+            this.row=row;
+            this.col=col;
+            this.type=type;
+            this.pieceT=pieceT;
         }
-        if(i===7){
-            if(j===0 || j===7){
-                AddImage(typeD, 'Palhan', cell);
-            }
-            else if(j===1 || j===6){
-                AddImage(typeD, 'Horse', cell);
-            }
-            else if(j===2 || j===5){
-                AddImage(typeD, 'Elephant', cell);
-            }
-            else if(j===3){
-                AddImage(typeD, 'King', cell);
-            }
-            else{
-                AddImage(typeD, 'Quin', cell);
-            }
-        }
-        if(i===6){
-            AddImage(typeD, 'Simple', cell);
-        }
-        
     }
-
-}
-    function AddImage(type, hero ,cell){
+////////////////////////////////////
+    function arrOfPiece(){//Makes the array of pieces
+        let result=[];
+        result.push(new piece(0, 0, typeW, 'rook'));
+        result.push(new piece(0, 1, typeW, 'knight'));
+        result.push(new piece(0, 2, typeW, 'bishop'));
+        result.push(new piece(0, 3, typeW, 'queen'));
+        result.push(new piece(0, 4, typeW, 'king'));
+        result.push(new piece(0, 5, typeW, 'bishop'));
+        result.push(new piece(0, 6, typeW, 'knight'));
+        result.push(new piece(0, 7, typeW, 'rook'));
+        for(let i=0; i<8;i++){
+            result.push(new piece(1, i, typeW, 'pawn'));
+        }
+        for(let i=0; i<8;i++){
+            result.push(new piece(6, i, typeD, 'pawn'));
+        }  
+        result.push(new piece(7, 0, typeD, 'rook'));
+        result.push(new piece(7, 1, typeD, 'knight'));
+        result.push(new piece(7, 2, typeD, 'bishop'));
+        result.push(new piece(7, 3, typeD, 'queen'));
+        result.push(new piece(7, 4, typeD, 'king'));
+        result.push(new piece(7, 5, typeD, 'bishop'));
+        result.push(new piece(7, 6, typeD, 'knight'));
+        result.push(new piece(7, 7, typeD, 'rook'));       
+        return result;     
+    }
+////////////////////////////////////
+    let imgIndex=0;
+////////////////////////////////////    
+    function AddImage(type, piece ,cell){//Func that adds piece images
         const img=document.createElement('img');
-        img.src='images/' + type + hero + '.png'
+        img.src='images/' + type + piece + '.png';
+        img.id=imgIndex;
+        imgIndex++;
         cell.appendChild(img);
         img.classList.add('heroImg');
     }
-    function HClick(cell, i, j){
-        cell.classList.add('changedCell');
-        if(lastCell!==cell){
-            lastCell.classList.remove('changedCell');
-        }
-        lastCell=cell;
-        console.log('click '+cell.id.toString());
+////////////////////////////////////
+    let lastCell;//Last cell for click event
+////////////////////////////////////
+    function HClick(e){//Click event
+        BoardColor();
+        e.currentTarget.style.backgroundColor='rgb(153, 182, 95)';
+        pieceMovement(e);
         
     }
-    function BoardColor(i,j,cell){
-        if((i + j) % 2===0){
-            // cell.style.backgroundColor = "brown";
-            cell.classList.add('darkTyped');
-        }
-        else{
-            // cell.style.backgroundColor = "wheat";
-            cell.classList.add('whiteTyped');
-        }
-        
-        console.log('painted');
+////////////////////////////////////
+    function BoardColor(){//Adds tile colors
+        for(let i= 0; i<8 ; i++){
+            for(let j= 0; j<8 ; j++){
+                if((i + j) % 2===0){
+                    // table.rows[i].cells[j].classList.add('darkTyped');
+                    table.rows[i].cells[j].style.backgroundColor='brown';
+                }
+                else{
+                    // table.rows[i].cells[j].classList.add('whiteTyped');
+                    table.rows[i].cells[j].style.backgroundColor='wheat';
+                }
+            }
+        }       
     }
-    function clickedOne(cell,i,j){
-        cell.addEventListener('click', () => {HClick(cell, i, j);});
+////////////////////////////////////
+    pieces=arrOfPiece();
+////////////////////////////////////
+    for (let piece of pieces) {//For that adds piece images by the piece class
+    AddImage(piece.type, piece.pieceT, table.rows[piece.row].cells[piece.col]);
     }
-
-
-
-
-
-// let left1=412;
-// var players = new Array();
-// for(let i=0;i<32;i++)
-// {
-//     players[i] = document.createElement("img");
-//     document.body.appendChild(players[i]);
-//     players[i].classList.add('player-img');
-//     if(i<=7){
-//         players[i].style.top='20px';
-//         players[i].style.left = left1.toString() + 'px';  
-//         left1+=87; 
-//     } 
-//     if(i===7){
-//         left1=412;
-//     }
-//     if( i>7 && i<=15){
-
-//         players[i].style.top='110px';
-//         players[i].style.left = left1.toString() + 'px';  
-//         left1+=87; 
-//     }
-//     if(i===15){
-//         left1=412;
-//     }
-//     if( i>15 && i<=23){
-
-//         players[i].style.top='540px';
-//         players[i].style.left = left1.toString() + 'px';  
-//         left1+=87; 
-//     }
-//     if(i===23){
-//         left1=412;
-//     }
-//     if( i>23 && i<=31){
-
-//         players[i].style.top='630px';
-//         players[i].style.left = left1.toString() + 'px';  
-//         left1+=87; 
-//     }
-// }
-// players[0].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Chess_Mdt45.svg/800px-Chess_Mdt45.svg.png";
-// players[7].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Chess_Mdt45.svg/800px-Chess_Mdt45.svg.png";
-// players[1].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Chess_tile_nd.svg/800px-Chess_tile_nd.svg.png";
-// players[6].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Chess_tile_nd.svg/800px-Chess_tile_nd.svg.png";
-// players[2].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Chess_bdt45.svg/800px-Chess_bdt45.svg.png";
-// players[5].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Chess_bdt45.svg/800px-Chess_bdt45.svg.png";
-// players[3].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Chess_tile_qd.svg/800px-Chess_tile_qd.svg.png";
-// players[4].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Chess_tile_kd.svg/800px-Chess_tile_kd.svg.png";
-// for(let i=8;i<16;i++){
-//     players[i].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Chess_pdt45.svg/800px-Chess_pdt45.svg.png";
-// }
-
-// for(let i=16;i<24;i++){
-//     players[i].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Chess_pClt26.svg/800px-Chess_pClt26.svg.png";
-// }
-// players[24].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Chess_Mlt45.svg/800px-Chess_Mlt45.svg.png";
-// players[31].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Chess_Mlt45.svg/800px-Chess_Mlt45.svg.png";
-// players[25].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Chess_tile_nl.svg/800px-Chess_tile_nl.svg.png";
-// players[30].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Chess_tile_nl.svg/800px-Chess_tile_nl.svg.png";
-// players[26].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Chess_blt45.svg/800px-Chess_blt45.svg.png";
-// players[29].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Chess_blt45.svg/800px-Chess_blt45.svg.png";
-// players[27].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Chess_tile_ql-whitebg.svg/800px-Chess_tile_ql-whitebg.svg.png";
-// players[28].src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Chess_tile_kl-whitebg.svg/800px-Chess_tile_kl-whitebg.svg.png";
-// let cells;
-// function hclick(w,i){
-//     const newLocal = "whitesmoke";
-//     w[i].style.backgroundColor = "red";
-//     console.log("clicked");
-// }
-
-
-
-
-
-
-
-
-
-
-
+////////////////////////////////////
+    function pieceMovement(e)//changes color of tiles compared to the piece chosen
+    {
+        let id = e.currentTarget.children[0].id;
+        let p=pieces[id];
+        if(p.pieceT=='pawn'&&p.type=='White'){
+            table.rows[((p.row)+1)].cells[(p.col)].style.backgroundColor='rgb(153, 182, 95)';
+            table.rows[((p.row)+2)].cells[(p.col)].style.backgroundColor='rgb(153, 182, 95)';
+        }
+        else if(p.pieceT=='pawn'&&p.type=='Dark'){
+            table.rows[((p.row)-1)].cells[(p.col)].style.backgroundColor='rgb(153, 182, 95)';
+            table.rows[((p.row)-2)].cells[(p.col)].style.backgroundColor='rgb(153, 182, 95)';
+        }
+        else if(p.pieceT=='rook'){
+            for(let i=1; i<8; i++){
+                if(p.row+i<8){
+                    table.rows[((p.row)+i)].cells[(p.col)].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                if(p.row-i>-1){
+                    table.rows[p.row-i].cells[p.col].style.backgroundColor='rgb(153, 182, 95)';
+                }
+            }
+            for(let i=1; i<8; i++){
+                if(p.col+i<8){
+                    table.rows[p.row].cells[p.col+i].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                if(p.col-i>-1){
+                    table.rows[p.row].cells[p.col-i].style.backgroundColor='rgb(153, 182, 95)';
+                }
+            }
+        }
+        else if(p.pieceT=='knight'){
+            if(p.row+2<8&&p.col+1<8){
+                table.rows[p.row+2].cells[p.col+1].style.backgroundColor='rgb(153, 182, 95)';
+            }         
+            if(p.row-2>=0&&p.col-1>=0){
+                table.rows[p.row-2].cells[p.col-1].style.backgroundColor='rgb(153, 182, 95)';
+            }     
+            if(p.row+2<8&&p.col-1>=0){
+                table.rows[p.row+2].cells[p.col-1].style.backgroundColor='rgb(153, 182, 95)';
+            } 
+            if(p.row-2>=0&&p.col+1<8){
+                table.rows[p.row-2].cells[p.col+1].style.backgroundColor='rgb(153, 182, 95)';
+            }  // 
+            if(p.row+1<8&&p.col+2<8){
+                table.rows[p.row+1].cells[p.col+2].style.backgroundColor='rgb(153, 182, 95)';
+            }         
+            if(p.row-1>=0&&p.col-2>=0){
+                table.rows[p.row-1].cells[p.col-2].style.backgroundColor='rgb(153, 182, 95)';
+            }     
+            if(p.row+1<8&&p.col-2>=0){
+                table.rows[p.row+1].cells[p.col-2].style.backgroundColor='rgb(153, 182, 95)';
+            } 
+            if(p.row-1>=0&&p.col+2<8){
+                table.rows[p.row-1].cells[p.col+2].style.backgroundColor='rgb(153, 182, 95)';
+            }   
+        }
+        else if(p.pieceT=='bishop'){
+            for(let i=1; i<8; i++){
+                if(p.row+i<8&&p.col+i<8){
+                    table.rows[((p.row)+i)].cells[(p.col+i)].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                if(p.row-i>-1&&p.col-i>-1){
+                    table.rows[p.row-i].cells[p.col-i].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                if(p.row-i>-1&&p.col+i<8){
+                    table.rows[((p.row)-i)].cells[(p.col+i)].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                if(p.row+i<8&&p.col-i>-1){
+                    table.rows[p.row+i].cells[p.col-i].style.backgroundColor='rgb(153, 182, 95)';
+                }
+            }
+        }
+        else if(p.pieceT=='king'){
+            if(p.row+1<8&&p.col+1<8){
+                table.rows[p.row+1].cells[p.col+1].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row].cells[p.col+1].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row+1].cells[p.col].style.backgroundColor='rgb(153, 182, 95)';
+            }         
+            if(p.row-1>-1&&p.col-1>-1){
+                table.rows[p.row-1].cells[p.col-1].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row].cells[p.col-1].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row-1].cells[p.col].style.backgroundColor='rgb(153, 182, 95)';
+            }     
+            if(p.row+1<8&&p.col-1>-1){
+                table.rows[p.row+1].cells[p.col-1].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row+1].cells[p.col].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row].cells[p.col-1].style.backgroundColor='rgb(153, 182, 95)';
+            } 
+            if(p.row-1>-1&&p.col+1<8){
+                table.rows[p.row-1].cells[p.col+1].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row-1].cells[p.col].style.backgroundColor='rgb(153, 182, 95)';
+                table.rows[p.row].cells[p.col+1].style.backgroundColor='rgb(153, 182, 95)';
+            } 
+        }
+        else if(p.pieceT=='queen'){
+            for(let i=1; i<8; i++){
+                if(p.row+i<8){
+                    table.rows[((p.row)+i)].cells[(p.col)].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                if(p.row-i>-1){
+                    table.rows[p.row-i].cells[p.col].style.backgroundColor='rgb(153, 182, 95)';
+                }
+            }
+            for(let i=1; i<8; i++){
+                if(p.col+i<8){
+                    table.rows[p.row].cells[p.col+i].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                if(p.col-i>-1){
+                    table.rows[p.row].cells[p.col-i].style.backgroundColor='rgb(153, 182, 95)';
+                }
+                for(let i=1; i<8; i++){
+                    if(p.row+i<8&&p.col+i<8){
+                        table.rows[((p.row)+i)].cells[(p.col+i)].style.backgroundColor='rgb(153, 182, 95)';
+                    }
+                    if(p.row-i>-1&&p.col-i>-1){
+                        table.rows[p.row-i].cells[p.col-i].style.backgroundColor='rgb(153, 182, 95)';
+                    }
+                    if(p.row-i>-1&&p.col+i<8){
+                        table.rows[((p.row)-i)].cells[(p.col+i)].style.backgroundColor='rgb(153, 182, 95)';
+                    }
+                    if(p.row+i<8&&p.col-i>-1){
+                        table.rows[p.row+i].cells[p.col-i].style.backgroundColor='rgb(153, 182, 95)';
+                    }
+                }
+            }
+        }
+    }
+    ////////////////////////////////////
 }
-
-
-
-
-
-
-
-
-
-
-// for(let i=0;i<tableTr.length;i++){
-// tableTr[i]=document.createElement("tr");
-// }
-// // for(let i=0;i<tableTr.length;i++)
-// // {
-// //     for(let j=0;j<tableTr.length;j++)
-// //     {
-// //         tableTr[i]=document.createElement("td");
-// //         if(i%2===0&&j%2===0||i%2!==0&&j%2!==0)
-// //         {
-
-// //         }
-// //     }
-// // }
