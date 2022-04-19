@@ -1,5 +1,4 @@
-
-.table-container{
+.table-container {
     height: 700px;
     width: 700px;
     border: 5px solid black;
@@ -9,32 +8,41 @@
     border-collapse: collapse;
     position: relative;
 }
-.table-container tr ,td{
+
+.table-container tr,
+td {
     height: 12%;
     width: 12%;
     border: 3px solid black;
+    
+
 }
-.whiteTyped{
+.whiteTyped {
     background-color: wheat;
 }
-.darkTyped{
+
+.darkTyped {
     background-color: brown;
 }
-    .num-table{
+
+.num-table {
     font-weight: bold;
     text-align: center;
 }
-.player-img{
+
+.player-img {
     height: 70px;
     width: 70px;
     position: absolute;
 }
-.heroImg{
+
+.heroImg {
     align-self: center;
     width: 70px;
     height: 70px;
 
 }
-.changedCell{
+
+.changedCell {
     background-color: rgb(153, 182, 95);
 }
