@@ -1,8 +1,11 @@
 
 window.onload = () => {
     ////////////////////////////////////
-    {//Creates the board
-        var table = document.createElement('table');
+    var h1 = document.createElement('h1');
+    document.body.appendChild(h1);
+    h1.innerText = 'Chess';
+    var table = document.createElement('table');
+    function createBoard(){//Creates the board       
         table.classList.add('table-container');
         const body = document.querySelector('body');
         body.appendChild(table);
@@ -16,6 +19,7 @@ window.onload = () => {
         }
         boardColor();
     }
+    createBoard();
     ////////////////////////////////////
     function boardColor() {//Adds tile colors
         for (let i = 0; i < 8; i++) {
@@ -36,6 +40,8 @@ window.onload = () => {
     let typeD = 'Dark';
     let pieces = [];
     let imgIndex = 0;
+    let darkKingLose = false;
+    let whiteKingLose = false;
     ////////////////////////////////////
     class piece {//Class of the chess pieces
         constructor(row, col, type, pieceT) {
@@ -70,6 +76,9 @@ window.onload = () => {
             let arr = this.cell.id.split(" ");
             this.row = parseInt(arr[0]);
             this.col = parseInt(arr[1]);
+        }
+        cellAdd(rAdd, cAdd) {
+            return table.rows[this.row + rAdd].cells[this.col + cAdd];
         }
     }
     ////////////////////////////////////
@@ -107,19 +116,28 @@ window.onload = () => {
     let lastP;
     let whiteTurn = true;
     function HClick(e) {//Click event 
-        if (e.currentTarget.style.backgroundColor != 'rgb(153, 182, 95)' && e.currentTarget.hasChildNodes()) {//if cell is not green or has img
+        if (e.currentTarget.style.backgroundColor != 'green' && e.currentTarget.hasChildNodes()) {//if cell is not green or has img
             if (e.currentTarget.style.backgroundColor !== 'red')
                 e.currentTarget.style.backgroundColor = 'orange';
         }
 
         if (e.currentTarget.children[0] != undefined) {
+
             if (e.currentTarget.style.backgroundColor === 'red') {//red tiled paint for eating
                 let id = e.currentTarget.children[0].id;
                 let p = pieces[id];
                 lastP.cell = p.cell;
+                if (p.pieceT == 'king') {
+                    if (p.type == 'Dark') {
+                        mate('dark');
+                    }
+                    else if (p.type == 'White') {
+                        mate('white');
+                    }
+
+                }
                 p.removeImage();
                 lastP.updateColRowByCell();
-                console.log(lastP);
                 lastP.moveImage();
                 boardColor();
                 if (whiteTurn) {
@@ -137,11 +155,10 @@ window.onload = () => {
                 lastP = p;
             }
         } else {
-            if (e.currentTarget.style.backgroundColor === 'rgb(153, 182, 95)') {//piece movement on green tiles 
+            if (e.currentTarget.style.backgroundColor === 'green') {//piece movement on green tiles 
                 lastP.removeImage();
                 lastP.cell = e.currentTarget;
                 lastP.updateColRowByCell();
-                console.log(lastP);
                 lastP.moveImage();
                 boardColor();
                 if (whiteTurn) {
@@ -158,786 +175,294 @@ window.onload = () => {
     ////////////////////////////////////
     function pieceMovementOptions(p)//changes color of tiles compared to the piece chosen
     {
-
-        if (p.pieceT == 'pawn' && p.type == 'White' && whiteTurn) {
+        if (p.pieceT == 'pawn' && p.type == 'White' && whiteTurn || p.pieceT == 'pawn' && p.type == 'Dark' && !whiteTurn) {
+            let a = 1;
+            if (p.type == 'Dark')
+                a = -1;
             if (p.firstMove) {
                 let hasPiece = false;
                 for (let i = 1; i <= 2 && !hasPiece; i++) {
-                    if (hasImgInCell(table.rows[((p.row) + i)].cells[(p.col)])) {
+                    if (hasImgInCell(p.cellAdd(a * i, 0))) {
                         hasPiece = true;
                     } else {
-                        table.rows[((p.row) + i)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
+                        p.cellAdd(a * i, 0).style.backgroundColor = 'green';
                     }
                 }
             } else {
-                if (!hasImgInCell(table.rows[((p.row) + 1)].cells[(p.col)])) {
-                    table.rows[((p.row) + 1)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
+                if (!hasImgInCell(p.cellAdd(a, 0))) {
+                    p.cellAdd(a, 0).style.backgroundColor = 'green';
                 }
             }
-            if ((p.row + 1) < 8 && (p.col + 1) < 8) {
-                isEnemy(table.rows[p.row + 1].cells[p.col + 1], p.type)
-            }
-            if ((p.row + 1) >= 0 && (p.col - 1) >= 0) {
-                isEnemy(table.rows[p.row + 1].cells[p.col - 1], p.type)
-            }
-        }
-
-        ////////////////////////////////////
-        else if (p.pieceT == 'rook' && p.type == 'White' && whiteTurn) {
-            let hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0) {
-                    if (hasImgInCell(table.rows[(p.row) - i].cells[(p.col)])) {
-                        if (isEnemy(table.rows[(p.row) - i].cells[(p.col)], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[((p.row) - i)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row].cells[(p.col - i)])) {
-                        if (isEnemy(table.rows[p.row].cells[(p.col - i)], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-
-                }
-            }
-
-        }
-        ////////////////////////////////////
-        else if (p.pieceT == 'knight' && p.type == 'White' && whiteTurn) {
-            if (p.row + 2 < 8 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row + 2].cells[p.col + 1])) {
-                    table.rows[p.row + 2].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 2].cells[p.col + 1], p.type);
-            }
-            if (p.row - 2 >= 0 && p.col - 1 >= 0) {
-                if (!hasImgInCell(table.rows[p.row - 2].cells[p.col - 1])) {
-                    table.rows[p.row - 2].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 2].cells[p.col - 1], p.type);
-            }
-            if (p.row + 2 < 8 && p.col - 1 >= 0) {
-                if (!hasImgInCell(table.rows[p.row + 2].cells[p.col - 1])) {
-                    table.rows[p.row + 2].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 2].cells[p.col - 1], p.type);
-            }
-            if (p.row - 2 >= 0 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row - 2].cells[p.col + 1])) {
-                    table.rows[p.row - 2].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 2].cells[p.col + 1], p.type);
-            }
-            if (p.row + 1 < 8 && p.col + 2 < 8) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col + 2])) {
-                    table.rows[p.row + 1].cells[p.col + 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col + 2], p.type);
-            }
-            if (p.row - 1 >= 0 && p.col - 2 >= 0) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col - 2])) {
-                    table.rows[p.row - 1].cells[p.col - 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col - 2], p.type);
-            }
-            if (p.row - 1 >= 0 && p.col + 2 < 8) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col + 2])) {
-                    table.rows[p.row - 1].cells[p.col + 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col + 2], p.type);
-            }
-            if (p.row + 1 < 8 && p.col - 2 >= 0) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col - 2])) {
-                    table.rows[p.row + 1].cells[p.col - 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col - 2], p.type);
-            }
-        }
-
-        ////////////////////////////////////
-        else if (p.pieceT == 'bishop' && p.type == 'White' && whiteTurn) {
-            let hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-        }
-
-        ////////////////////////////////////
-        else if (p.pieceT == 'king' && p.type == 'White' && whiteTurn) {
-            if (p.row + 1 < 8 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col + 1])) {
-                    table.rows[p.row + 1].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col + 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row].cells[p.col + 1])) {
-                    table.rows[p.row].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col + 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col])) {
-                    table.rows[p.row + 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col], p.type)
-
-            }
-            if (p.row - 1 > -1 && p.col - 1 > -1) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col - 1])) {
-                    table.rows[p.row - 1].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col - 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row].cells[p.col - 1])) {
-                    table.rows[p.row].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col - 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col])) {
-                    table.rows[p.row - 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col], p.type)
-
-            }
-            if (p.row + 1 < 8 && p.col - 1 > -1) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col - 1])) {
-                    table.rows[p.row + 1].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col - 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row].cells[p.col - 1])) {
-                    table.rows[p.row].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col - 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col])) {
-                    table.rows[p.row + 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col], p.type)
-            }
-            if (p.row - 1 > -1 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col + 1])) {
-                    table.rows[p.row - 1].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col + 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row].cells[p.col + 1])) {
-                    table.rows[p.row].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col + 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col])) {
-                    table.rows[p.row - 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col], p.type)
-            }
-
-        }
-
-        ////////////////////////////////////
-        else if (p.pieceT == 'queen' && p.type == 'White' && whiteTurn) {
-            let hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-
-
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0) {
-                    if (hasImgInCell(table.rows[(p.row) - i].cells[(p.col)])) {
-                        if (isEnemy(table.rows[(p.row) - i].cells[(p.col)], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[((p.row) - i)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row].cells[(p.col - i)])) {
-                        if (isEnemy(table.rows[p.row].cells[(p.col - i)], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-
-                }
-            }
-        }
-
-        ////////////////////////////////////
-        else if (p.pieceT == 'pawn' && p.type == 'Dark' && !whiteTurn) {
-            if (p.firstMove) {
-                let hasPiece = false;
-                for (let i = 1; i <= 2 && !hasPiece; i++) {
-                    if (table.rows[((p.row) - i)].cells[(p.col)].hasChildNodes()) {
-                        hasPiece = true;
-                    } else {
-                        table.rows[((p.row) - i)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
+            if (a == 1) {
+                if ((p.row + 1) < 8 && (p.col + 1) < 8)
+                    isEnemy(p.cellAdd(1, 1), p.type)
+                if ((p.row + 1) < 8 && (p.col - 1) >= 0)
+                    isEnemy(p.cellAdd(1, -1), p.type)
             } else {
-                if (!table.rows[((p.row) - 1)].cells[(p.col)].hasChildNodes()) {
-                    table.rows[((p.row) - 1)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
-                }
+                if ((p.row - 1) >= 0 && (p.col + 1) < 8)
+                    isEnemy(p.cellAdd(-1, 1), p.type)
+                if ((p.row - 1) >= 0 && (p.col - 1) >= 0)
+                    isEnemy(p.cellAdd(-1, -1), p.type)
             }
-            if ((p.row - 1) >= 0 && (p.col + 1) < 8) {
-                console.log('entered');
-                isEnemy(table.rows[p.row - 1].cells[p.col + 1], p.type)
-            }
-            if ((p.row - 1) >= 0 && (p.col - 1) >= 0) {
 
-                isEnemy(table.rows[p.row - 1].cells[p.col - 1], p.type)
-            }
         }
-
         ////////////////////////////////////
-        else if (p.pieceT == 'rook' && p.type == 'Dark' && !whiteTurn) {
-            let hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
+        else if (p.pieceT == 'rook' && p.type == 'White' && whiteTurn || p.pieceT == 'rook' && p.type == 'Dark' && !whiteTurn) {
+            let hasPiece1 = 1;
+            let hasPiece2 = 1;
+            let hasPiece3 = 1;
+            let hasPiece4 = 1;
+            for (let i = 1; i < 8; i++) {
                 if (p.row + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col], p.type)) {
-                            table.rows[p.row + i].cells[p.col].style.backgroundColor = 'red';
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(i, 0))) {
+                        if (isEnemy(p.cellAdd(i * hasPiece1, 0), p.type))
+                            hasPiece1 = 0;
+                        else
+                            hasPiece1 = 0;
+                    } else
+                        p.cellAdd(i * hasPiece1, 0).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
                 if (p.row - i >= 0) {
-                    if (hasImgInCell(table.rows[(p.row) - i].cells[(p.col)])) {
-                        if (isEnemy(table.rows[(p.row) - i].cells[(p.col)], p.type)) {
-                            table.rows[((p.row) - i)].cells[(p.col)].style.backgroundColor = 'red';
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[((p.row) - i)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(-i, 0))) {
+                        if (isEnemy(p.cellAdd(-i * hasPiece2, 0), p.type))
+                            hasPiece2 = 0;
+                        else
+                            hasPiece2 = 0;
+                    } else
+                        p.cellAdd(-i * hasPiece2, 0).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
                 if (p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row].cells[p.col + i], p.type)) {
-                            table.rows[p.row].cells[p.col + i].style.backgroundColor = 'red';
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(0, i))) {
+                        if (isEnemy(p.cellAdd(0, i * hasPiece3), p.type))
+                            hasPiece3 = 0;
+                        else
+                            hasPiece3 = 0;
+
+                    } else
+                        p.cellAdd(0, i * hasPiece3).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
                 if (p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row].cells[(p.col - i)])) {
-                        if (isEnemy(table.rows[p.row].cells[(p.col - i)], p.type)) {
-                            table.rows[p.row].cells[p.col - i].style.backgroundColor = 'red';
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(0, -i))) {
+                        if (isEnemy(p.cellAdd(0, -i * hasPiece4), p.type))
+                            hasPiece4 = 0;
+                        else
+                            hasPiece4 = 0;
+                    } else
+                        p.cellAdd(0, -i * hasPiece4).style.backgroundColor = 'green';
 
                 }
             }
-
         }
-
         ////////////////////////////////////
-        else if (p.pieceT == 'knight' && p.type == 'Dark' && !whiteTurn) {
-            if (p.row + 2 < 8 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row + 2].cells[p.col + 1])) {
-                    table.rows[p.row + 2].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 2].cells[p.col + 1], p.type);
-            }
-            if (p.row - 2 >= 0 && p.col - 1 >= 0) {
-                if (!hasImgInCell(table.rows[p.row - 2].cells[p.col - 1])) {
-                    table.rows[p.row - 2].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 2].cells[p.col - 1], p.type);
-            }
-            if (p.row + 2 < 8 && p.col - 1 >= 0) {
-                if (!hasImgInCell(table.rows[p.row + 2].cells[p.col - 1])) {
-                    table.rows[p.row + 2].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 2].cells[p.col - 1], p.type);
-            }
-            if (p.row - 2 >= 0 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row - 2].cells[p.col + 1])) {
-                    table.rows[p.row - 2].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 2].cells[p.col + 1], p.type);
-            }
-            if (p.row + 1 < 8 && p.col + 2 < 8) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col + 2])) {
-                    table.rows[p.row + 1].cells[p.col + 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col + 2], p.type);
-            }
-            if (p.row - 1 >= 0 && p.col - 2 >= 0) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col - 2])) {
-                    table.rows[p.row - 1].cells[p.col - 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col - 2], p.type);
-            }
-            if (p.row - 1 >= 0 && p.col + 2 < 8) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col + 2])) {
-                    table.rows[p.row - 1].cells[p.col + 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col + 2], p.type);
-            }
-            if (p.row + 1 < 8 && p.col - 2 >= 0) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col - 2])) {
-                    table.rows[p.row + 1].cells[p.col - 2].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col - 2], p.type);
+        else if (p.pieceT == 'knight' && p.type == 'White' && whiteTurn || p.pieceT == 'knight' && p.type == 'Dark' && !whiteTurn) {
+            let a = 1;
+            let b = 2;
+            for (let i = 0; i < 4; i++) {
+                if (p.row + b < 8 && p.col + a < 8 && p.row + b >= 0 && p.col + a >= 0) {
+                    if (!hasImgInCell(p.cellAdd(b, a)))
+                        p.cellAdd(b, a).style.backgroundColor = 'green';
+                    else
+                        isEnemy(p.cellAdd(b, a), p.type);
+                }
+                if (p.row + a < 8 && p.col + b < 8 && p.row + a >= 0 && p.col + b >= 0) {
+                    if (!hasImgInCell(p.cellAdd(a, b)))
+                        p.cellAdd(a, b).style.backgroundColor = 'green';
+                    else
+                        isEnemy(p.cellAdd(a, b), p.type);
+                }
+                if (i == 0)
+                    a *= -1;//b=2 a=-1
+                else if (i == 1)
+                    b *= -1;//b=-2 a=-1
+                else
+                    a *= -1;//a=1 b=-2
+
             }
         }
-
         ////////////////////////////////////
-        else if (p.pieceT == 'bishop' && p.type == 'Dark' && !whiteTurn) {
-            let hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
+        else if (p.pieceT == 'bishop' && p.type == 'White' && whiteTurn || p.pieceT == 'bishop' && p.type == 'Dark' && !whiteTurn) {
+            let hasPiece1 = 1;
+            let hasPiece2 = 1;
+            let hasPiece3 = 1;
+            let hasPiece4 = 1;
+            for (let i = 1; i < 8; i++) {
                 if (p.row + i < 8 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(i, i))) {
+                        if (isEnemy(p.cellAdd(i * hasPiece1, i * hasPiece1), p.type))
+                            hasPiece1 = 0;
+                        else
+                            hasPiece1 = 0;
+                    } else
+                        p.cellAdd(i * hasPiece1, i * hasPiece1).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
                 if (p.row - i >= 0 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(-i, -i))) {
+                        if (isEnemy(p.cellAdd(-i * hasPiece2, -i * hasPiece2), p.type))
+                            hasPiece2 = 0;
+                        else
+                            hasPiece2 = 0;
+                    } else
+                        p.cellAdd(-i * hasPiece2, -i * hasPiece2).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                if (p.col + i < 8 && p.row - i >= 0) {
+                    if (hasImgInCell(p.cellAdd(-i, i))) {
+                        if (isEnemy(p.cellAdd(-i * hasPiece3, i * hasPiece3), p.type))
+                            hasPiece3 = 0;
+                        else
+                            hasPiece3 = 0;
+
+                    } else
+                        p.cellAdd(-i * hasPiece3, i * hasPiece3).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                if (p.col - i >= 0 && p.row + i < 8) {
+                    if (hasImgInCell(p.cellAdd(i, -i))) {
+                        if (isEnemy(p.cellAdd(i * hasPiece4, -i * hasPiece4), p.type))
+                            hasPiece4 = 0;
+                        else
+                            hasPiece4 = 0;
+
+                    } else
+                        p.cellAdd(i * hasPiece4, -i * hasPiece4).style.backgroundColor = 'green';
                 }
             }
         }
-
         ////////////////////////////////////
-        else if (p.pieceT == 'king' && p.type == 'Dark' && !whiteTurn) {
-            if (p.row + 1 < 8 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col + 1])) {
-                    table.rows[p.row + 1].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col + 1], p.type)
+        else if (p.pieceT == 'king' && p.type == 'White' && whiteTurn || p.pieceT == 'king' && p.type == 'Dark' && !whiteTurn) {
+            let a=1;
+            let b=1;
+            for (let i = 0; i < 4; i++) {
+                if (p.row + 1*a < 8 && p.col + 1*b < 8 && p.row + 1*a >= 0 && p.col + 1*b >=0) {
+                    if (!hasImgInCell(p.cellAdd(1*a, 1*b))) {
+                        p.cellAdd(1*a, 1*b).style.backgroundColor = 'green';
+                    } else
+                        isEnemy(p.cellAdd(1*a, 1*b), p.type)
 
-                if (!hasImgInCell(table.rows[p.row].cells[p.col + 1])) {
-                    table.rows[p.row].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col + 1], p.type)
+                    if (!hasImgInCell(p.cellAdd(0, 1*b))) {
+                        p.cellAdd(0, 1*b).style.backgroundColor = 'green';
+                    } else
+                        isEnemy(p.cellAdd(0, 1*b), p.type)
 
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col])) {
-                    table.rows[p.row + 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col], p.type)
+                    if (!hasImgInCell(p.cellAdd(1*a, 0))) {
+                        p.cellAdd(1*a, 0).style.backgroundColor = 'green';
+                    } else                      
+                    isEnemy(p.cellAdd(1*a, 0), p.type)
+                }
+                if (p.row + 1*b < 8 && p.col + 1*a < 8 && p.row + 1*b >= 0 && p.col + 1*a >=0) {
+                    if (!hasImgInCell(p.cellAdd(1*b, 1*a))) {
+                        p.cellAdd(1*b, 1*a).style.backgroundColor = 'green';
+                    } else
+                        isEnemy(p.cellAdd(1*b, 1*a), p.type)
 
-            }
-            if (p.row - 1 > -1 && p.col - 1 > -1) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col - 1])) {
-                    table.rows[p.row - 1].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col - 1], p.type)
+                    if (!hasImgInCell(p.cellAdd(0, 1*a))) {
+                        p.cellAdd(0, 1*a).style.backgroundColor = 'green';
+                    } else
+                        isEnemy(p.cellAdd(0, 1*a), p.type)
 
-                if (!hasImgInCell(table.rows[p.row].cells[p.col - 1])) {
-                    table.rows[p.row].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col - 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col])) {
-                    table.rows[p.row - 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col], p.type)
-
-            }
-            if (p.row + 1 < 8 && p.col - 1 > -1) {
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col - 1])) {
-                    table.rows[p.row + 1].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col - 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row].cells[p.col - 1])) {
-                    table.rows[p.row].cells[p.col - 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col - 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row + 1].cells[p.col])) {
-                    table.rows[p.row + 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row + 1].cells[p.col], p.type)
-            }
-            if (p.row - 1 > -1 && p.col + 1 < 8) {
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col + 1])) {
-                    table.rows[p.row - 1].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col + 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row].cells[p.col + 1])) {
-                    table.rows[p.row].cells[p.col + 1].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row].cells[p.col + 1], p.type)
-
-                if (!hasImgInCell(table.rows[p.row - 1].cells[p.col])) {
-                    table.rows[p.row - 1].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                } else
-                    isEnemy(table.rows[p.row - 1].cells[p.col], p.type)
+                    if (!hasImgInCell(p.cellAdd(1*b, 0))) {
+                        p.cellAdd(1*b, 0).style.backgroundColor = 'green';
+                    } else
+                        isEnemy(p.cellAdd(1*b, 0), p.type)
+                }
+                if(i==0){
+                    a*=-1;//a=-1 b=1
+                }else if(i==1){
+                    b*=-1;//a=-1 b=-1
+                }else if(i==2){
+                    a*=-1;//a=1 b=-1
+                }
             }
         }
-
         ////////////////////////////////////
-        else if (p.pieceT == 'queen' && p.type == 'Dark' && !whiteTurn) {
-            let hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row - i >= 0 && p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row - i].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row - i].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row - i].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.row + i < 8 && p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col - i])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col - i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
-                }
-            }
-
-
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
+        else if (p.pieceT == 'queen' && p.type == 'White' && whiteTurn || p.pieceT == 'queen' && p.type == 'Dark' && !whiteTurn) {
+            let hasPiece1 = 1;
+            let hasPiece2 = 1;
+            let hasPiece3 = 1;
+            let hasPiece4 = 1;
+            for (let i = 1; i < 8; i++) {
                 if (p.row + i < 8) {
-                    if (hasImgInCell(table.rows[p.row + i].cells[p.col])) {
-                        if (isEnemy(table.rows[p.row + i].cells[p.col], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row + i].cells[p.col].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(i, 0))) {
+                        if (isEnemy(p.cellAdd(i * hasPiece1, 0), p.type))
+                            hasPiece1 = 0;
+                        else
+                            hasPiece1 = 0;
+                    } else
+                        p.cellAdd(i * hasPiece1, 0).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
                 if (p.row - i >= 0) {
-                    if (hasImgInCell(table.rows[(p.row) - i].cells[(p.col)])) {
-                        if (isEnemy(table.rows[(p.row) - i].cells[(p.col)], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[((p.row) - i)].cells[(p.col)].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(-i, 0))) {
+                        if (isEnemy(p.cellAdd(-i * hasPiece2, 0), p.type))
+                            hasPiece2 = 0;
+                        else
+                            hasPiece2 = 0;
+                    } else
+                        p.cellAdd(-i * hasPiece2, 0).style.backgroundColor = 'green';
                 }
-            }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
                 if (p.col + i < 8) {
-                    if (hasImgInCell(table.rows[p.row].cells[p.col + i])) {
-                        if (isEnemy(table.rows[p.row].cells[p.col + i], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col + i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+                    if (hasImgInCell(p.cellAdd(0, i))) {
+                        if (isEnemy(p.cellAdd(0, i * hasPiece3), p.type))
+                            hasPiece3 = 0;
+                        else
+                            hasPiece3 = 0;
+
+                    } else
+                        p.cellAdd(0, i * hasPiece3).style.backgroundColor = 'green';
+                }
+                if (p.col - i >= 0) {
+                    if (hasImgInCell(p.cellAdd(0, -i))) {
+                        if (isEnemy(p.cellAdd(0, -i * hasPiece4), p.type))
+                            hasPiece4 = 0;
+                        else
+                            hasPiece4 = 0;
+                    } else
+                        p.cellAdd(0, -i * hasPiece4).style.backgroundColor = 'green';
+
                 }
             }
-            hasPiece = false;
-            for (let i = 1; i < 8 && !hasPiece; i++) {
-                if (p.col - i >= 0) {
-                    if (hasImgInCell(table.rows[p.row].cells[(p.col - i)])) {
-                        if (isEnemy(table.rows[p.row].cells[(p.col - i)], p.type)) {
-                            hasPiece = true;
-                        } else {
-                            hasPiece = true;
-                        }
-                    } else {
-                        table.rows[p.row].cells[p.col - i].style.backgroundColor = 'rgb(153, 182, 95)';
-                    }
+            hasPiece1 = 1;
+            hasPiece2 = 1;
+            hasPiece3 = 1;
+            hasPiece4 = 1;
+            for (let i = 1; i < 8; i++) {
+                if (p.row + i < 8 && p.col + i < 8) {
+                    if (hasImgInCell(p.cellAdd(i, i))) {
+                        if (isEnemy(p.cellAdd(i * hasPiece1, i * hasPiece1), p.type))
+                            hasPiece1 = 0;
+                        else
+                            hasPiece1 = 0;
+                    } else
+                        p.cellAdd(i * hasPiece1, i * hasPiece1).style.backgroundColor = 'green';
+                }
+                if (p.row - i >= 0 && p.col - i >= 0) {
+                    if (hasImgInCell(p.cellAdd(-i, -i))) {
+                        if (isEnemy(p.cellAdd(-i * hasPiece2, -i * hasPiece2), p.type))
+                            hasPiece2 = 0;
+                        else
+                            hasPiece2 = 0;
+                    } else
+                        p.cellAdd(-i * hasPiece2, -i * hasPiece2).style.backgroundColor = 'green';
+                }
+                if (p.col + i < 8 && p.row - i >= 0) {
+                    if (hasImgInCell(p.cellAdd(-i, i))) {
+                        if (isEnemy(p.cellAdd(-i * hasPiece3, i * hasPiece3), p.type))
+                            hasPiece3 = 0;
+                        else
+                            hasPiece3 = 0;
 
+                    } else
+                        p.cellAdd(-i * hasPiece3, i * hasPiece3).style.backgroundColor = 'green';
+                }
+                if (p.col - i >= 0 && p.row + i < 8) {
+                    if (hasImgInCell(p.cellAdd(i, -i))) {
+                        if (isEnemy(p.cellAdd(i * hasPiece4, -i * hasPiece4), p.type))
+                            hasPiece4 = 0;
+                        else
+                            hasPiece4 = 0;
+
+                    } else
+                        p.cellAdd(i * hasPiece4, -i * hasPiece4).style.backgroundColor = 'green';
                 }
             }
         }
-
     }
     ////////////////////////////////////
     function hasImgInCell(cell) {
@@ -955,6 +480,71 @@ window.onload = () => {
                 return false;
         } else
             return false;
+    }
+    ////////////////////////////////////
+    {
+        // function check() {
+        //     let wKing = pieces[4];
+        //     let dKing = pieces[28];
+        //     if (takePieceFromCell(wKing.cellAdd(1,1)).pieceT == 'pawn' || takePieceFromCell(wKing.cellAdd(1,-1)).pieceT == 'pawn') {
+        //         checkAnimation('White');
+        //     }
+        //     if (takePieceFromCell(dKing.cellAdd(-1,1)).pieceT == 'pawn' || takePieceFromCell(dKing.cellAdd(-1,-1)).pieceT == 'pawn') {
+        //         checkAnimation('Dark');
+        //     }
+        //     if(cimetrickCheck(wKing, 'White')){
+        //         checkAnimation('White');
+        //     }
+        //     if(cimetrickCheck(dKing, 'Dark')){
+        //         checkAnimation('Dark');
+        //     }
+
+        // }
+        // function cimetrickCheck(king, type){
+        //     let a =1;
+        //     let b =2;
+        //     for(let i = 0; i<2;i++){//knight
+        //         if(takePieceFromCell(king.cellAdd(a,b)).pieceT == 'knight' && takePieceFromCell(king.cellAdd(a,b)).type !== type){
+        //             return true;
+        //         }
+        //         else if(takePieceFromCell(king.cellAdd(b,a)).pieceT == 'knight' && takePieceFromCell(king.cellAdd(b,a)).type !== type){
+        //             return true;
+        //         }
+        //         else if(takePieceFromCell(king.cellAdd(-a,-b)).pieceT == 'knight' && takePieceFromCell(king.cellAdd(-b,-a)).type !== type){
+        //             return true;
+        //         }
+        //         else if(takePieceFromCell(king.cellAdd(-b,-a)).pieceT == 'knight' && takePieceFromCell(king.cellAdd(-b,-a)).type !== type){
+        //             return true;
+        //         }
+        //         a=-1;
+        //     }
+        //     for(let i=1;i<(8-king.row);i++){
+        //         if(takePieceFromCell(king.cellAdd(i,0)).pieceT == 'rook' && )
+        //     }
+
+        // }
+        //check
+        ////////////////////////////////////
+        // function checkAnimation(type) {
+        //     console.log(type + 'check');
+        // }
+    }//check
+    ////////////////////////////////////
+    function takePieceFromCell(cell) {
+        if (cell.children[0] != undefined) {
+            let id = cell.children[0].id;
+            let p = pieces[id];
+            return p;
+        }
+    }
+    ////////////////////////////////////
+    function mate(str) {
+        if (str === 'dark') {
+            alert('White Won!')
+        } else if (str === 'white') {
+            alert('Black Won!');
+        }
+        location.reload();
     }
     ////////////////////////////////////
 }

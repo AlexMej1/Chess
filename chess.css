@@ -42,7 +42,13 @@ td {
     height: 70px;
 
 }
-
-.changedCell {
-    background-color: rgb(153, 182, 95);
+body{
+    background-image: url(/Chess/images/tableBackground.png);
+    align-content: center;
+}
+h1{
+    text-align : center;
+    font-weight: bold;
+    text-decoration: underline;
+    color: white;
 }
