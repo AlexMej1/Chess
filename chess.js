@@ -69,7 +69,10 @@ window.onload = () => {
             this.img.classList.add('heroImg');
         }
         removeImage() {
-
+            this.cell.removeChild(this.img);
+        }
+        deletePiece(){
+            this.pieceT='removed';
             this.cell.removeChild(this.img);
         }
         moveImage() {
@@ -301,7 +304,7 @@ window.onload = () => {
                     else if (p.type == 'White')
                         mate('white');
                 }
-                p.removeImage();
+                p.deletePiece();
                 prevP.updateColRowByCell();
                 prevP.moveImage();
                 prevP.firstMove = false;
@@ -376,7 +379,6 @@ window.onload = () => {
                 cell.style.backgroundColor = 'red';
                 return true;
             }
-            // 
             else if (check && p.type !== type && p.pieceT === 'king') {
                 if (whiteTurn && p.type === typeW || !whiteTurn && p.type === typeD) {
                     cell.style.backgroundColor = 'blue';
@@ -384,9 +386,9 @@ window.onload = () => {
                     return true;
                 }
             }
-            else
-                return false;
         }
+        else
+                return false;
     }
     ////////////////////////////////////
     function check() {
