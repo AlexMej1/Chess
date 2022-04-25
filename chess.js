@@ -122,17 +122,18 @@ window.onload = () => {
                 let hasPiece2 = 1;
                 let hasPiece3 = 1;
                 let hasPiece4 = 1;
-                let j = 0;
+                let j = 1;
                 for (let i = 1; i < 8; i++) {
                     if (pieceT === 'bishop')
                         j = i;
                     if (this.row + i < 8 && this.col + j < 8) {
+                        
                         if (hasImgInCell(this.cellAdd(i, j))) {
                             if (isEnemy(this.cellAdd(i * hasPiece1, j * hasPiece1), this.type))
                                 hasPiece1 = 0;
                             else
                                 hasPiece1 = 0;
-                        } else
+                        } else if(hasPiece1!=0)
                             moves.push(this.cellAdd(i * hasPiece1, j * hasPiece1));
                     }
                     if (this.row - i >= 0 && this.col - j >= 0) {
@@ -141,31 +142,31 @@ window.onload = () => {
                                 hasPiece2 = 0;
                             else
                                 hasPiece2 = 0;
-                        } else
+                        } else if(hasPiece1!=0)
                             moves.push(this.cellAdd(-i * hasPiece2, -j * hasPiece2));
                     }
                     if (this.col + i < 8 && this.row - j >= 0) {
-                        if (hasImgInCell(this.cellAdd(-i, j))) {
-                            if (isEnemy(this.cellAdd(-i * hasPiece3, j * hasPiece3), this.type))
+                        if (hasImgInCell(this.cellAdd(-j, i))) {
+                            if (isEnemy(this.cellAdd(-j * hasPiece3, i * hasPiece3), this.type))
                                 hasPiece3 = 0;
                             else
                                 hasPiece3 = 0;
 
-                        } else
-                            moves.push(this.cellAdd(-i * hasPiece3, j * hasPiece3));
+                        } else if(hasPiece1!=0)
+                            moves.push(this.cellAdd(-j * hasPiece3, i * hasPiece3));
                     }
                     if (this.col - i >= 0 && this.row + j < 8) {
-                        if (hasImgInCell(this.cellAdd(i, -j))) {
-                            if (isEnemy(this.cellAdd(i * hasPiece4, -j * hasPiece4), this.type))
+                        if (hasImgInCell(this.cellAdd(j, -i))) {
+                            if (isEnemy(this.cellAdd(j * hasPiece4, -i * hasPiece4), this.type))
                                 hasPiece4 = 0;
                             else
                                 hasPiece4 = 0;
 
-                        } else
-                            moves.push(this.cellAdd(i * hasPiece4, -j * hasPiece4));
-                    }
-                    return moves;
+                        } else if(hasPiece1!=0)
+                            moves.push(this.cellAdd(j * hasPiece4, -i * hasPiece4));
+                    }                   
                 }
+                return moves;
             }
         }
         getRookMoves() {
@@ -177,8 +178,10 @@ window.onload = () => {
             return moves;
         }
         getQueenMoves() {
-            let moves = this.getcemetricMoves('rook');
-            return moves.concat(this.getcemetricMoves('bishop'));
+            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn){
+                let moves = this.getcemetricMoves('rook');
+                return moves.concat(this.getcemetricMoves('bishop'));
+            }
         }
         getKnightMoves() {
             if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn) {
