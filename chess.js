@@ -14,7 +14,7 @@ window.onload = () => {
             for (let j = 0; j < 8; j++) {
                 let cell = row.insertCell();
                 cell.id = i.toString() + " " + j.toString();
-                cell.addEventListener('click', HClick);
+                cell.addEventListener('click', ClickEventFunc);
             }
         }
         boardColor();
@@ -52,9 +52,15 @@ window.onload = () => {
             this.cell = table.rows[this.row].cells[this.col];
             this.img = document.createElement('img');
             this.firstMove = true;
+            this.opponent = this.getOpponent();
         }
         //todo: img lays on row and col
-
+        getOpponent() {
+            if (this.type === typeW)
+                return typeD;
+            else
+                return typeW;
+        }
         addImage() {//Func that adds piece images
             this.img.src = 'images/' + this.type + this.pieceT + '.png';
             this.img.id = imgIndex;
@@ -80,8 +86,8 @@ window.onload = () => {
         cellAdd(rAdd, cAdd) {
             return table.rows[this.row + rAdd].cells[this.col + cAdd];
         }
-        getPawnMoves() {
-            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn) {
+        getPawnMoves(check) {
+            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn || check) {
                 let moves = [];
                 let a = 1;
                 if (this.type == 'Dark')
@@ -102,89 +108,89 @@ window.onload = () => {
                 }
                 if (a == 1) {
                     if ((this.row + 1) < 8 && (this.col + 1) < 8)
-                        isEnemy(this.cellAdd(1, 1), this.type)
+                        isEnemy(this.cellAdd(1, 1), this.type, check);
                     if ((this.row + 1) < 8 && (this.col - 1) >= 0)
-                        isEnemy(this.cellAdd(1, -1), this.type)
+                        isEnemy(this.cellAdd(1, -1), this.type, check);
                 } else {
                     if ((this.row - 1) >= 0 && (this.col + 1) < 8)
-                        isEnemy(this.cellAdd(-1, 1), this.type)
+                        isEnemy(this.cellAdd(-1, 1), this.type, check);
                     if ((this.row - 1) >= 0 && (this.col - 1) >= 0)
-                        isEnemy(this.cellAdd(-1, -1), this.type)
+                        isEnemy(this.cellAdd(-1, -1), this.type, check);
                 }
                 return moves;
             }
 
         }
-        getcemetricMoves(pieceT) {
+        getcemetricMoves(pieceT, check) {
             let moves = [];
-            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn) {
+            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn || check) {
                 let hasPiece1 = 1;
                 let hasPiece2 = 1;
                 let hasPiece3 = 1;
                 let hasPiece4 = 1;
-                let j = 1;
+                let j = 0;
                 for (let i = 1; i < 8; i++) {
                     if (pieceT === 'bishop')
                         j = i;
                     if (this.row + i < 8 && this.col + j < 8) {
-                        
+
                         if (hasImgInCell(this.cellAdd(i, j))) {
-                            if (isEnemy(this.cellAdd(i * hasPiece1, j * hasPiece1), this.type))
+                            if (isEnemy(this.cellAdd(i * hasPiece1, j * hasPiece1), this.type, check))
                                 hasPiece1 = 0;
                             else
                                 hasPiece1 = 0;
-                        } else if(hasPiece1!=0)
+                        } else if (hasPiece1 !== 0)
                             moves.push(this.cellAdd(i * hasPiece1, j * hasPiece1));
                     }
                     if (this.row - i >= 0 && this.col - j >= 0) {
                         if (hasImgInCell(this.cellAdd(-i, -j))) {
-                            if (isEnemy(this.cellAdd(-i * hasPiece2, -j * hasPiece2), this.type))
+                            if (isEnemy(this.cellAdd(-i * hasPiece2, -j * hasPiece2), this.type, check))
                                 hasPiece2 = 0;
                             else
                                 hasPiece2 = 0;
-                        } else if(hasPiece1!=0)
+                        } else if (hasPiece2 !== 0)
                             moves.push(this.cellAdd(-i * hasPiece2, -j * hasPiece2));
                     }
                     if (this.col + i < 8 && this.row - j >= 0) {
                         if (hasImgInCell(this.cellAdd(-j, i))) {
-                            if (isEnemy(this.cellAdd(-j * hasPiece3, i * hasPiece3), this.type))
+                            if (isEnemy(this.cellAdd(-j * hasPiece3, i * hasPiece3), this.type, check))
                                 hasPiece3 = 0;
                             else
                                 hasPiece3 = 0;
 
-                        } else if(hasPiece1!=0)
+                        } else if (hasPiece3 !== 0)
                             moves.push(this.cellAdd(-j * hasPiece3, i * hasPiece3));
                     }
                     if (this.col - i >= 0 && this.row + j < 8) {
                         if (hasImgInCell(this.cellAdd(j, -i))) {
-                            if (isEnemy(this.cellAdd(j * hasPiece4, -i * hasPiece4), this.type))
+                            if (isEnemy(this.cellAdd(j * hasPiece4, -i * hasPiece4), this.type, check))
                                 hasPiece4 = 0;
                             else
                                 hasPiece4 = 0;
 
-                        } else if(hasPiece1!=0)
+                        } else if (hasPiece4 !== 0)
                             moves.push(this.cellAdd(j * hasPiece4, -i * hasPiece4));
-                    }                   
+                    }
                 }
                 return moves;
             }
         }
-        getRookMoves() {
-            let moves = this.getcemetricMoves(this.pieceT);
+        getRookMoves(check) {
+            let moves = this.getcemetricMoves(this.pieceT, check);
             return moves;
         }
-        getBishopMoves() {
-            let moves = this.getcemetricMoves(this.pieceT);
+        getBishopMoves(check) {
+            let moves = this.getcemetricMoves(this.pieceT, check);
             return moves;
         }
-        getQueenMoves() {
-            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn){
-                let moves = this.getcemetricMoves('rook');
-                return moves.concat(this.getcemetricMoves('bishop'));
+        getQueenMoves(check) {
+            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn || check) {
+                let moves = this.getcemetricMoves('rook', check);
+                return moves.concat(this.getcemetricMoves('bishop', check));
             }
         }
-        getKnightMoves() {
-            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn) {
+        getKnightMoves(check) {
+            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn || check) {
                 let moves = [];
                 let a = 1;
                 let b = 2;
@@ -193,13 +199,13 @@ window.onload = () => {
                         if (!hasImgInCell(this.cellAdd(b, a)))
                             moves.push(this.cellAdd(b, a));
                         else
-                            isEnemy(this.cellAdd(b, a), this.type);
+                            isEnemy(this.cellAdd(b, a), this.type, check);
                     }
                     if (this.row + a < 8 && this.col + b < 8 && this.row + a >= 0 && this.col + b >= 0) {
                         if (!hasImgInCell(this.cellAdd(a, b)))
                             moves.push(this.cellAdd(a, b));
                         else
-                            isEnemy(this.cellAdd(a, b), this.type);
+                            isEnemy(this.cellAdd(a, b), this.type, check);
                     }
                     if (i == 0)
                         a *= -1;//b=2 a=-1
@@ -211,8 +217,8 @@ window.onload = () => {
                 return moves;
             }
         }
-        getKingMoves() {
-            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn) {
+        getKingMoves(check) {
+            if (this.type == 'White' && whiteTurn || this.type == 'Dark' && !whiteTurn || check) {
                 let moves = [];
                 let a = 1;
                 let b = 1;
@@ -221,33 +227,17 @@ window.onload = () => {
                         if (!hasImgInCell(this.cellAdd(1 * a, 1 * b))) {
                             moves.push(this.cellAdd(1 * a, 1 * b));
                         } else
-                            isEnemy(this.cellAdd(1 * a, 1 * b), this.type)
+                            isEnemy(this.cellAdd(1 * a, 1 * b), this.type, check)
 
                         if (!hasImgInCell(this.cellAdd(0, 1 * b))) {
                             moves.push(this.cellAdd(0, 1 * b));
                         } else
-                            isEnemy(this.cellAdd(0, 1 * b), this.type)
+                            isEnemy(this.cellAdd(0, 1 * b), this.type, check)
 
                         if (!hasImgInCell(this.cellAdd(1 * a, 0))) {
                             moves.push(this.cellAdd(1 * a, 0));
                         } else
-                            isEnemy(this.cellAdd(1 * a, 0), this.type)
-                    }
-                    if (this.row + 1 * this < 8 && this.col + 1 * a < 8 && this.row + 1 * b >= 0 && this.col + 1 * a >= 0) {
-                        if (!hasImgInCell(this.cellAdd(1 * b, 1 * a))) {
-                            moves.push(this.cellAdd(1 * b, 1 * a));
-                        } else
-                            isEnemy(this.cellAdd(1 * b, 1 * a), this.type)
-
-                        if (!hasImgInCell(this.cellAdd(0, 1 * a))) {
-                            moves.push(this.cellAdd(0, 1 * a));
-                        } else
-                            isEnemy(this.cellAdd(0, 1 * a), this.type)
-
-                        if (!hasImgInCell(this.cellAdd(1 * b, 0))) {
-                            moves.push(this.cellAdd(1 * b, 0));
-                        } else
-                            isEnemy(this.cellAdd(1 * b, 0), this.type);
+                            isEnemy(this.cellAdd(1 * a, 0), this.type, check)
                     }
                     if (i == 0) {
                         a *= -1;//a=-1 b=1
@@ -257,6 +247,7 @@ window.onload = () => {
                         a *= -1;//a=1 b=-1
                     }
                 }
+                return moves;
             }
         }
     }
@@ -292,20 +283,18 @@ window.onload = () => {
         piece.addImage();
     }
     ////////////////////////////////////
-    let lastP;
+    let prevP;
     let whiteTurn = true;
-    function HClick(e) {//Click event 
-        if (e.currentTarget.style.backgroundColor != 'green' && e.currentTarget.hasChildNodes()) {//if cell is not green or has img
+    function ClickEventFunc(e) {//Click event 
+        if (e.currentTarget.style.backgroundColor != 'aqua' && e.currentTarget.hasChildNodes()) {//if cell is not green or has img
             if (e.currentTarget.style.backgroundColor !== 'red')
                 e.currentTarget.style.backgroundColor = 'orange';
         }
-
         if (e.currentTarget.children[0] != undefined) {
-
             if (e.currentTarget.style.backgroundColor === 'red') {//red tiled paint for enemy
                 let id = e.currentTarget.children[0].id;
                 let p = pieces[id];
-                lastP.cell = p.cell;
+                prevP.cell = p.cell;
                 if (p.pieceT == 'king') {
                     if (p.type == 'Dark')
                         mate('dark');
@@ -313,13 +302,15 @@ window.onload = () => {
                         mate('white');
                 }
                 p.removeImage();
-                lastP.updateColRowByCell();
-                lastP.moveImage();
+                prevP.updateColRowByCell();
+                prevP.moveImage();
+                prevP.firstMove = false;
                 boardColor();
                 if (whiteTurn)
                     whiteTurn = false;
                 else
                     whiteTurn = true;
+                check();
             }
             if (e.currentTarget.style.backgroundColor === 'orange') {
                 let id = e.currentTarget.children[0].id;
@@ -327,21 +318,22 @@ window.onload = () => {
                 boardColor();
                 e.currentTarget.style.backgroundColor = 'orange';
                 pieceMovementOptions(p);
-                lastP = p;
+                prevP = p;
             }
         } else {
-            if (e.currentTarget.style.backgroundColor === 'green') {//piece movement on green tiles 
-                lastP.removeImage();
-                lastP.cell = e.currentTarget;
-                lastP.updateColRowByCell();
-                lastP.moveImage();
+            if (e.currentTarget.style.backgroundColor === 'aqua') {//piece movement on green tiles 
+                prevP.removeImage();
+                prevP.cell = e.currentTarget;
+                prevP.updateColRowByCell();
+                prevP.moveImage();
                 boardColor();
                 if (whiteTurn)
                     whiteTurn = false;
                 else
                     whiteTurn = true;
-                if (lastP.firstMove)
-                    lastP.changeFirstMove();
+                if (prevP.firstMove)
+                    prevP.changeFirstMove();
+                check();
             }
         }
     }
@@ -350,26 +342,25 @@ window.onload = () => {
     {
         let moves;
         if (p.pieceT === 'pawn')
-            moves = p.getPawnMoves();
+            moves = p.getPawnMoves(false);
         ////////////////////////////////////
         else if (p.pieceT === 'knight')
-            moves = p.getKnightMoves();
+            moves = p.getKnightMoves(false);
         ////////////////////////////////////
         else if (p.pieceT === 'rook')
-            moves = p.getRookMoves();
+            moves = p.getRookMoves(false);
         ////////////////////////////////////
         else if (p.pieceT == 'bishop')
-            moves = p.getBishopMoves();
+            moves = p.getBishopMoves(false);
         ////////////////////////////////////
         else if (p.pieceT === 'queen')
-            moves = p.getQueenMoves();
+            moves = p.getQueenMoves(false);
         ////////////////////////////////////
         else if (p.pieceT === 'king')
-            moves = p.getKingMoves();
+            moves = p.getKingMoves(false);
         if (moves !== undefined) {
-            for (let i = 0; i < moves.length; i++) {
-                moves[i].style.backgroundColor = "green";
-            }
+            for (let i = 0; i < moves.length; i++)
+                moves[i].style.backgroundColor = 'aqua';
         }
     }
     ////////////////////////////////////
@@ -377,27 +368,46 @@ window.onload = () => {
         return cell.hasChildNodes();
     }
     ////////////////////////////////////
-    function isEnemy(cell, type) {
+    function isEnemy(cell, type, check) {
         if (cell.hasChildNodes()) {
             let id = cell.children[0].id;
             let p = pieces[id];
-            if (p.type !== type) {
+            if (p.type !== type && !check) {
                 cell.style.backgroundColor = 'red';
                 return true;
-            } else
+            }
+            // 
+            else if (check && p.type !== type && p.pieceT === 'king') {
+                if (whiteTurn && p.type === typeW || !whiteTurn && p.type === typeD) {
+                    cell.style.backgroundColor = 'blue';
+                    console.log("check " + p.type + " " + p.pieceT);
+                    return true;
+                }
+            }
+            else
                 return false;
-        } else
-            return false;
+        }
     }
     ////////////////////////////////////
-
-    ////////////////////////////////////
-    function takePieceFromCell(cell) {
-        if (cell.children[0] != undefined) {
-            let id = cell.children[0].id;
-            let p = pieces[id];
-            return p;
+    function check() {
+        for (let piece of pieces) {
+            if (piece.pieceT === 'pawn')
+                piece.getPawnMoves(true);
+            else if (piece.pieceT === 'rook')
+                piece.getRookMoves(true);
+            else if (piece.pieceT === 'bishop')
+                piece.getBishopMoves(true);
+            else if (piece.pieceT === 'knight')
+                piece.getKnightMoves(true);
+            else if (piece.pieceT === 'king')
+                piece.getKingMoves(true);
+            else if (piece.pieceT === 'queen')
+                piece.getQueenMoves(true);
         }
+    }
+    ////////////////////////////////////
+    function checkAnimation(str) {
+        console.log(str + 'on check')
     }
     ////////////////////////////////////
     function mate(str) {
