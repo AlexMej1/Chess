@@ -1,6 +1,7 @@
 
 window.onload = () => {
     ////////////////////////////////////
+    {
     var h1 = document.createElement('h1');
     document.body.appendChild(h1);
     h1.innerText = 'The chess:';
@@ -16,6 +17,7 @@ window.onload = () => {
     document.body.appendChild(restartBtn);
     restartBtn.addEventListener('click', restartGame);
     var table = document.createElement('table');
+    }
     let endGame=false;
     function createBoard() {//Creates the board       
         table.classList.add('table-container');
@@ -58,12 +60,15 @@ window.onload = () => {
             this.col = col;
             this.type = type;
             this.pieceT = pieceT;
-            this.cell = table.rows[this.row].cells[this.col];
+            this.cell = this.updateCell();
             this.img = document.createElement('img');
             this.firstMove = true;
             this.opponent = this.getOpponent();
         }
         //todo: img lays on row and col
+        updateCell(){
+            return table.rows[this.row].cells[this.col];
+        }
         getOpponent() {
             if (this.type === typeW)
                 return typeD;
